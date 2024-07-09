@@ -12,6 +12,10 @@ import com.example.thenewsapp.ui.NewsActivity
 import com.example.thenewsapp.ui.NewsViewModel
 import com.google.android.material.snackbar.Snackbar
 
+/**
+ * Article fragment which show information of the news by opening the website in web view
+ */
+
 class ArticleFragment : Fragment(R.layout.fragment_article) {
 
     lateinit var newsViewModel: NewsViewModel

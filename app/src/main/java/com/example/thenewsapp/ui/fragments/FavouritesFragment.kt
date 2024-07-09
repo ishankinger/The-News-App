@@ -3,6 +3,7 @@ package com.example.thenewsapp.ui.fragments
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.View
+import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -15,6 +16,9 @@ import com.example.thenewsapp.ui.NewsActivity
 import com.example.thenewsapp.ui.NewsViewModel
 import com.google.android.material.snackbar.Snackbar
 
+/**
+ * Fragment showing the favourite news stored in the room database
+ */
 class FavouritesFragment : Fragment(R.layout.fragment_favourites) {
 
     lateinit var newsViewModel: NewsViewModel
@@ -36,6 +40,7 @@ class FavouritesFragment : Fragment(R.layout.fragment_favourites) {
             findNavController().navigate(R.id.action_favouritesFragment_to_articleFragment,bundle)
         }
 
+        // code for removing the news item by swapping and can also do undo
         val itemTouchHelperCallBack = object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT){

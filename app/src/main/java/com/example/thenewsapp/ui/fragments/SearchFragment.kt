@@ -28,6 +28,9 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/**
+ * Fragment where we can search news by giving input query
+ */
 class SearchFragment : Fragment(R.layout.fragment_search) {
 
     lateinit var newsViewModel: NewsViewModel

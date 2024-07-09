@@ -15,14 +15,17 @@ import kotlinx.coroutines.launch
 import okio.IOException
 import retrofit2.Response
 
-class NewsViewModel(app: Application, val newsRepository : NewsRepository) : AndroidViewModel(app) {
+/**
+ * Holds all the data needed for the UI, prepare it for display
+ */
+class NewsViewModel(app: Application, private val newsRepository : NewsRepository) : AndroidViewModel(app) {
 
     val headlines : MutableLiveData<Resource<NewsResponse>> = MutableLiveData()
-    var headlinesPage = 1
+    var headlinesPage : Int = 1
     var headlinesResponse : NewsResponse? = null
 
     val searchNews : MutableLiveData<Resource<NewsResponse>> = MutableLiveData()
-    var searchNewsPage = 1
+    var searchNewsPage : Int = 1
     var searchNewsResponse : NewsResponse? = null
     var newSearchQuery : String? = null
     var oldSearchQuery : String? = null
@@ -31,6 +34,9 @@ class NewsViewModel(app: Application, val newsRepository : NewsRepository) : And
         getHeadlines("us")
     }
 
+    /**
+     * Here all the database calling function called under viewModelScope
+     */
     fun addToFavourites(article : Article)
             = viewModelScope.launch {
         newsRepository.upsert(article)
@@ -43,6 +49,11 @@ class NewsViewModel(app: Application, val newsRepository : NewsRepository) : And
         newsRepository.delete(article)
     }
 
+    /**
+     * Here all the network calling function under viewModelScope by first checking the internet
+     * connectivity and then getting the response and updating current response and it's pages
+     */
+
     fun getHeadlines(countryCode: String) =
         viewModelScope.launch {
             headlinesInternet(countryCode)
@@ -52,6 +63,9 @@ class NewsViewModel(app: Application, val newsRepository : NewsRepository) : And
         viewModelScope.launch {
             searchNewsInternet(searchQuery)
         }
+
+
+    // function to update the headlines page and add new articles to the headline response
     private fun handleHeadlinesResponse(response : Response<NewsResponse>) : Resource<NewsResponse>{
         if(response.isSuccessful){
             response.body()?.let{ resultResponse->
@@ -64,12 +78,13 @@ class NewsViewModel(app: Application, val newsRepository : NewsRepository) : And
                     val newArticles = resultResponse.articles
                     oldArticles?.addAll(newArticles)
                 }
-                return Resource.Success(headlinesResponse?: resultResponse)
+                return Resource.Success(headlinesResponse ?: resultResponse)
             }
         }
         return Resource.Error(response.message())
     }
 
+    // function to update the searchNews page and add new article to the search news response
     private fun handleSearchNewsResponse(response : Response<NewsResponse>) : Resource<NewsResponse>{
         if(response.isSuccessful){
             response.body()?.let { resultResponse->
@@ -90,6 +105,7 @@ class NewsViewModel(app: Application, val newsRepository : NewsRepository) : And
         return Resource.Error(response.message())
     }
 
+    // function to check for the internet connection
     private fun internetConnection(context : Context) : Boolean{
         (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).apply{
             return getNetworkCapabilities(activeNetwork)?.run{
@@ -103,6 +119,7 @@ class NewsViewModel(app: Application, val newsRepository : NewsRepository) : And
         }
     }
 
+    // function to get news headlines when there is internet connectivity otherwise give error
     private suspend fun headlinesInternet(countryCode : String){
         headlines.postValue(Resource.Loading())
         try{
@@ -121,6 +138,7 @@ class NewsViewModel(app: Application, val newsRepository : NewsRepository) : And
         }
     }
 
+    // function to get search news when there is internet connectivity otherwise give error
     private suspend fun searchNewsInternet(searchQuery : String){
         newSearchQuery = searchQuery
         searchNews.postValue(Resource.Loading())

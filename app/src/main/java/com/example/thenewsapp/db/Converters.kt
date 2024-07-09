@@ -3,6 +3,9 @@ package com.example.thenewsapp.db
 import androidx.room.TypeConverter
 import com.example.thenewsapp.models.Source
 
+/**
+ *  Source datatype is not supported by database so we convert it using Type Converters
+ */
 class Converters {
     @TypeConverter
     fun fromSource(source : Source) : String{

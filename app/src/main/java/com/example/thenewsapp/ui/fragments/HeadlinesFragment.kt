@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.Button
 import android.widget.TextView
@@ -17,35 +18,43 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.thenewsapp.R
 import com.example.thenewsapp.adapters.NewsAdapter
 import com.example.thenewsapp.databinding.FragmentHeadlinesBinding
+import com.example.thenewsapp.databinding.ItemErrorBinding
 import com.example.thenewsapp.ui.NewsActivity
 import com.example.thenewsapp.ui.NewsViewModel
 import com.example.thenewsapp.util.Constants
 import com.example.thenewsapp.util.Resource
 
+/**
+ * Fragment showing the headlines news using news Adapter
+ */
+
 class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
 
     lateinit var newsViewModel: NewsViewModel
     lateinit var newsAdapter: NewsAdapter
+
     lateinit var retryButton: Button
     lateinit var errorText: TextView
     lateinit var itemHeadlinesError: CardView
+
     lateinit var binding: FragmentHeadlinesBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // connecting all the late init variables here
         binding = FragmentHeadlinesBinding.bind(view)
 
         itemHeadlinesError = view.findViewById(R.id.itemHeadlinesError)
-
         val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val viewE : View = inflater.inflate(R.layout.item_error,null)
         retryButton = viewE.findViewById(R.id.retryButton)
         errorText = viewE.findViewById(R.id.errorText)
 
         newsViewModel = (activity as NewsActivity).newsViewModel
-
         setUpHeadlinesRecycler()
 
+        // on item click listener of the item news (navigating to the article fragment by passing article)
         newsAdapter.setOnItemClickListener {
             val bundle = Bundle().apply{
                 putSerializable("article",it)
@@ -53,6 +62,7 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
             findNavController().navigate(R.id.action_headlinesFragment_to_articleFragment,bundle)
         }
 
+        // when there will be any change in the data of headlines variable this observer will be called
         newsViewModel.headlines.observe(viewLifecycleOwner, Observer { response->
             when(response){
                 is Resource.Success<*> ->{
@@ -80,12 +90,14 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
             }
         })
 
-        retryButton.setOnClickListener{
+        // on click listener for retryButton
+        itemHeadlinesError.setOnClickListener{
             newsViewModel.getHeadlines("us")
             Toast.makeText(activity,"Clicked",Toast.LENGTH_SHORT).show()
         }
     }
 
+    // function to show or hide Progress Bar and Error message
     var isError = false
     var isLoading = false
     var isLastPage = false
@@ -112,7 +124,9 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
         isError = true
     }
 
+    // scroll Listener to apply pagination on the headlines response
     val scrollListener = object : RecyclerView.OnScrollListener(){
+
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
             if(newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL){
@@ -137,12 +151,15 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
 
             val shouldPaginate = isNoErrors && isNotLoadingAndNotLastPage && isAtLastItem && isNotAtBeginning && isTotalMoreThanVisible && isScrolling
             if(shouldPaginate){
+                // via this call headlines value in notesViewModel will change and observer will be called
+                // which submit the list of headlines responses to adapter to be visible on the screen
                 newsViewModel.getHeadlines("us")
                 isScrolling = false
             }
         }
     }
 
+    // function to connect the recycler view with our news adapter
     private fun setUpHeadlinesRecycler(){
         newsAdapter = NewsAdapter()
         binding.recyclerHeadlines.apply{

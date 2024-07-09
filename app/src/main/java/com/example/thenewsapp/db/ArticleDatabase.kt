@@ -7,6 +7,9 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.thenewsapp.models.Article
 
+/**
+ * Creating the instance of the database
+ */
 @Database(entities = [Article::class], version=1)
 @TypeConverters(Converters::class)
 abstract class ArticleDatabase : RoomDatabase() {

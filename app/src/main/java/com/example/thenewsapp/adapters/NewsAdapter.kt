@@ -12,6 +12,10 @@ import com.bumptech.glide.Glide
 import com.example.thenewsapp.R
 import com.example.thenewsapp.models.Article
 
+/**
+ * Adapter to show the list of the news with their properties and also navigate by clicking on items
+ */
+
 class NewsAdapter : RecyclerView.Adapter<NewsAdapter.ArticleViewHolder>() {
 
     inner class ArticleViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView)
@@ -48,18 +52,22 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.ArticleViewHolder>() {
     override fun onBindViewHolder(holder: ArticleViewHolder, position: Int) {
         val article = differ.currentList[position]
 
+        // connecting the local variables to the views of the item news
         articleImage = holder.itemView.findViewById(R.id.articleImage)
         articleSource = holder.itemView.findViewById(R.id.articleSource)
         articleTitle = holder.itemView.findViewById(R.id.articleTitle)
         articleDescription = holder.itemView.findViewById(R.id.articleDescription)
         articleDateTime = holder.itemView.findViewById(R.id.articleDateTime)
 
+        // filling the values of the views of item news
         holder.itemView.apply{
             Glide.with(this).load(article.urlToImage).into(articleImage)
             articleSource.text = article.source.name
             articleTitle.text = article.title
             articleDescription.text = article.description
             articleDateTime.text = article.publishedAt
+
+            // setting up the click listener for the items
             setOnClickListener {
                 onItemClickListener?.let{
                     it(article)
