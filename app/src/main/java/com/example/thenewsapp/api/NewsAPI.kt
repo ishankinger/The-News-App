@@ -12,7 +12,9 @@ import retrofit2.http.Query
 
 interface NewsAPI {
 
-    // To fetch headlines data we are using "top-headlines" end-point
+    /**
+     * To fetch headlines data we are using "top-headlines" end-point
+      */
     @GET("v2/top-headlines")
     suspend fun getHeadlines(
         // different parameters for the url
@@ -24,7 +26,9 @@ interface NewsAPI {
         apiKey : String = API_KEY
     ) : Response<NewsResponse>
 
-    // To fetch search data we are using "everything" end-point
+    /**
+     * To fetch search data we are using "everything" end-point
+     */
     @GET("v2/everything")
     suspend fun searchForNews(
         // different parameters for the url

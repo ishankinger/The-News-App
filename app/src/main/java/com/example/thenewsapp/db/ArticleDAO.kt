@@ -11,7 +11,6 @@ import com.example.thenewsapp.models.Article
 /**
  * Abstract methods for interacting with the database are defined here
   */
-
 @Dao
 interface ArticleDAO {
 

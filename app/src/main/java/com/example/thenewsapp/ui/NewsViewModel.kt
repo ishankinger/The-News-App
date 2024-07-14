@@ -22,16 +22,16 @@ class NewsViewModel(app: Application, private val newsRepository : NewsRepositor
 
     val headlines : MutableLiveData<Resource<NewsResponse>> = MutableLiveData()
     var headlinesPage : Int = 1
-    var headlinesResponse : NewsResponse? = null
+    private var headlinesResponse : NewsResponse? = null
 
     val searchNews : MutableLiveData<Resource<NewsResponse>> = MutableLiveData()
     var searchNewsPage : Int = 1
-    var searchNewsResponse : NewsResponse? = null
-    var newSearchQuery : String? = null
-    var oldSearchQuery : String? = null
+    private var searchNewsResponse : NewsResponse? = null
+    private var newSearchQuery : String? = null
+    private var oldSearchQuery : String? = null
 
     init{
-        getHeadlines("us")
+        getHeadlines("in")
     }
 
     /**
@@ -81,7 +81,7 @@ class NewsViewModel(app: Application, private val newsRepository : NewsRepositor
                 return Resource.Success(headlinesResponse ?: resultResponse)
             }
         }
-        return Resource.Error(response.message())
+        return Resource.Error("Maximum Request Limit Reached")
     }
 
     // function to update the searchNews page and add new article to the search news response
@@ -102,7 +102,7 @@ class NewsViewModel(app: Application, private val newsRepository : NewsRepositor
                 return Resource.Success(searchNewsResponse ?: resultResponse)
             }
         }
-        return Resource.Error(response.message())
+        return Resource.Error("Maximum Request Limit Reached")
     }
 
     // function to check for the internet connection

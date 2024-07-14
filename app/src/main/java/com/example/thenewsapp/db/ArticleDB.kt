@@ -10,15 +10,15 @@ import com.example.thenewsapp.models.Article
 /**
  * Creating the instance of the database
  */
-@Database(entities = [Article::class], version=1)
+@Database([Article::class], version=1,exportSchema = false)
 @TypeConverters(Converters::class)
-abstract class ArticleDatabase : RoomDatabase() {
+abstract class ArticleDB : RoomDatabase() {
 
     abstract fun getArticleDao() : ArticleDAO
 
     companion object{
         @Volatile
-        private var instance : ArticleDatabase? = null
+        private var instance : ArticleDB? = null
         private val LOCK = Any()
 
         operator fun invoke(context : Context) = instance ?: synchronized(LOCK){
@@ -30,7 +30,7 @@ abstract class ArticleDatabase : RoomDatabase() {
         private fun createDatabase(context : Context) =
             Room.databaseBuilder(
                 context.applicationContext,
-                ArticleDatabase::class.java,
+                ArticleDB::class.java,
                 "article_db.db"
             ).build()
     }

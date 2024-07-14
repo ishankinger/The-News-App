@@ -1,11 +1,8 @@
 package com.example.thenewsapp.ui.fragments
 
-import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.Button
 import android.widget.TextView
@@ -18,26 +15,27 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.thenewsapp.R
 import com.example.thenewsapp.adapters.NewsAdapter
 import com.example.thenewsapp.databinding.FragmentHeadlinesBinding
-import com.example.thenewsapp.databinding.ItemErrorBinding
 import com.example.thenewsapp.ui.NewsActivity
 import com.example.thenewsapp.ui.NewsViewModel
 import com.example.thenewsapp.util.Constants
 import com.example.thenewsapp.util.Resource
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /**
  * Fragment showing the headlines news using news Adapter
  */
-
 class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
 
     lateinit var newsViewModel: NewsViewModel
-    lateinit var newsAdapter: NewsAdapter
+    private lateinit var newsAdapter: NewsAdapter
 
-    lateinit var retryButton: Button
-    lateinit var errorText: TextView
-    lateinit var itemHeadlinesError: CardView
+    private lateinit var retryButton: Button
+    private lateinit var errorText: TextView
+    private lateinit var itemHeadlinesError: CardView
 
-    lateinit var binding: FragmentHeadlinesBinding
+    private lateinit var binding: FragmentHeadlinesBinding
+
+    private var listLayout : Int = 1
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -46,13 +44,15 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
         binding = FragmentHeadlinesBinding.bind(view)
 
         itemHeadlinesError = view.findViewById(R.id.itemHeadlinesError)
-        val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val viewE : View = inflater.inflate(R.layout.item_error,null)
-        retryButton = viewE.findViewById(R.id.retryButton)
-        errorText = viewE.findViewById(R.id.errorText)
+        retryButton = binding.itemHeadlinesError.retryButton
+        errorText = binding.itemHeadlinesError.errorText
 
         newsViewModel = (activity as NewsActivity).newsViewModel
         setUpHeadlinesRecycler()
+
+        // Showing the bottom navigation view
+        val bottomNavigationView = (activity as NewsActivity).findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNavigationView?.visibility = View.VISIBLE
 
         // on item click listener of the item news (navigating to the article fragment by passing article)
         newsAdapter.setOnItemClickListener {
@@ -70,7 +70,7 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
                     hideErrorMessage()
                     response.data?.let{newsResponse->
                         newsAdapter.differ.submitList(newsResponse.articles.toList())
-                        val totalPages = newsResponse.totalResults/ Constants.QUERY_PAGE_SIZE
+                        val totalPages = newsResponse.totalResults/ Constants.QUERY_PAGE_SIZE + 2
                         isLastPage = newsViewModel.headlinesPage == totalPages
                         if(isLastPage){
                             binding.recyclerHeadlines.setPadding(0,0,0,0)
@@ -91,13 +91,14 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
         })
 
         // on click listener for retryButton
-        itemHeadlinesError.setOnClickListener{
+        retryButton.setOnClickListener{
             newsViewModel.getHeadlines("us")
-            Toast.makeText(activity,"Clicked",Toast.LENGTH_SHORT).show()
         }
     }
 
-    // function to show or hide Progress Bar and Error message
+    /**
+     * function to show or hide Progress Bar and Error message
+     */
     var isError = false
     var isLoading = false
     var isLastPage = false
@@ -124,8 +125,10 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
         isError = true
     }
 
-    // scroll Listener to apply pagination on the headlines response
-    val scrollListener = object : RecyclerView.OnScrollListener(){
+    /**
+     * scroll Listener to apply pagination on the headlines response
+     */
+    private val scrollListener = object : RecyclerView.OnScrollListener(){
 
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
@@ -161,7 +164,7 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
 
     // function to connect the recycler view with our news adapter
     private fun setUpHeadlinesRecycler(){
-        newsAdapter = NewsAdapter()
+        newsAdapter = NewsAdapter(listLayout)
         binding.recyclerHeadlines.apply{
             adapter = newsAdapter
             layoutManager = LinearLayoutManager(activity)

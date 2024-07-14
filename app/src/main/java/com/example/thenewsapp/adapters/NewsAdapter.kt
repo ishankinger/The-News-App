@@ -16,15 +16,15 @@ import com.example.thenewsapp.models.Article
  * Adapter to show the list of the news with their properties and also navigate by clicking on items
  */
 
-class NewsAdapter : RecyclerView.Adapter<NewsAdapter.ArticleViewHolder>() {
+class NewsAdapter(private val listLayout : Int) : RecyclerView.Adapter<NewsAdapter.ArticleViewHolder>() {
 
     inner class ArticleViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView)
 
-    lateinit var articleImage : ImageView
-    lateinit var articleSource : TextView
-    lateinit var articleTitle : TextView
-    lateinit var articleDescription : TextView
-    lateinit var articleDateTime : TextView
+    private lateinit var articleImage : ImageView
+    private lateinit var articleSource : TextView
+    private lateinit var articleTitle : TextView
+    private lateinit var articleDescription : TextView
+    private lateinit var articleDateTime : TextView
 
     private val differCallback = object : DiffUtil.ItemCallback<Article>(){
         override fun areItemsTheSame(oldItem: Article, newItem: Article): Boolean {
@@ -38,9 +38,15 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.ArticleViewHolder>() {
     val differ = AsyncListDiffer(this,differCallback)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArticleViewHolder {
-        return ArticleViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.item_news,parent,false)
-        )
+        return if(listLayout == 0){
+            ArticleViewHolder(
+                LayoutInflater.from(parent.context).inflate(R.layout.item_news_linear,parent,false)
+            )
+        } else{
+            ArticleViewHolder(
+                LayoutInflater.from(parent.context).inflate(R.layout.item_news,parent,false)
+            )
+        }
     }
 
     override fun getItemCount(): Int {
@@ -61,11 +67,27 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.ArticleViewHolder>() {
 
         // filling the values of the views of item news
         holder.itemView.apply{
-            Glide.with(this).load(article.urlToImage).into(articleImage)
-            articleSource.text = article.source.name
-            articleTitle.text = article.title
-            articleDescription.text = article.description
-            articleDateTime.text = article.publishedAt
+
+            Glide.with(this)
+                .load(article.urlToImage)
+                .placeholder(R.drawable.baseline_newspaper_24)
+                .into(articleImage)
+
+            article.source?.let{
+                articleSource.text = article.source.name
+            }
+
+            article.title?.let{
+                articleTitle.text = article.title
+            }
+
+            article.description?.let{
+                articleDescription.text = article.description
+            }
+
+            article.publishedAt?.let{
+                articleDateTime.text = article.publishedAt
+            }
 
             // setting up the click listener for the items
             setOnClickListener {
@@ -73,8 +95,11 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.ArticleViewHolder>() {
                     it(article)
                 }
             }
+
         }
     }
+
+    // when this called variable onItemClickListener value changes and click listener called
     fun setOnItemClickListener(listener : (Article) -> Unit){
         onItemClickListener = listener
     }

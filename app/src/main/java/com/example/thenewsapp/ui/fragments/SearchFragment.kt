@@ -1,9 +1,7 @@
 package com.example.thenewsapp.ui.fragments
 
-import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.AbsListView
 import android.widget.Button
@@ -23,6 +21,7 @@ import com.example.thenewsapp.ui.NewsViewModel
 import com.example.thenewsapp.util.Constants
 import com.example.thenewsapp.util.Constants.Companion.SEARCH_NEWS_TIME_DELAY
 import com.example.thenewsapp.util.Resource
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
@@ -34,27 +33,34 @@ import kotlinx.coroutines.launch
 class SearchFragment : Fragment(R.layout.fragment_search) {
 
     lateinit var newsViewModel: NewsViewModel
-    lateinit var newsAdapter: NewsAdapter
-    lateinit var retryButton: Button
-    lateinit var errorText: TextView
-    lateinit var itemSearchError: CardView
-    lateinit var binding : FragmentSearchBinding
+    private lateinit var newsAdapter: NewsAdapter
+
+    private lateinit var retryButton: Button
+    private lateinit var errorText: TextView
+    private lateinit var itemSearchError: CardView
+
+    private lateinit var binding : FragmentSearchBinding
+
+    private var listLayout : Int = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // connecting all the late init variables here
         binding = FragmentSearchBinding.bind(view)
 
         itemSearchError = view.findViewById(R.id.itemSearchError)
-
-        val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val viewE : View = inflater.inflate(R.layout.item_error,null)
-        retryButton = viewE.findViewById(R.id.retryButton)
-        errorText = viewE.findViewById(R.id.errorText)
+        retryButton = binding.itemSearchError.retryButton
+        errorText = binding.itemSearchError.errorText
 
         newsViewModel = (activity as NewsActivity).newsViewModel
-
         setupSearchRecycler()
 
+        // Showing the bottom navigation view
+        val bottomNavigationView = (activity as NewsActivity).findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNavigationView?.visibility = View.VISIBLE
+
+        // on item click listener of the item news (navigating to the article fragment by passing article)
         newsAdapter.setOnItemClickListener {
             val bundle = Bundle().apply{
                 putSerializable("article",it)
@@ -62,6 +68,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             findNavController().navigate(R.id.action_searchFragment_to_articleFragment,bundle)
         }
 
+        // searching news by change in every character of the string
         var job : Job? = null
         binding.searchEdit.addTextChangedListener{ editable->
             job?.cancel()
@@ -75,6 +82,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             }
         }
 
+        // when there will be any change in the data of searchNews variable this observer will be called
         newsViewModel.searchNews.observe(viewLifecycleOwner, Observer { response->
             when(response){
                 is Resource.Success<*> ->{
@@ -82,7 +90,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                     hideErrorMessage()
                     response.data?.let{newsResponse->
                         newsAdapter.differ.submitList(newsResponse.articles.toList())
-                        val totalPages = newsResponse.totalResults/ Constants.QUERY_PAGE_SIZE
+                        val totalPages = newsResponse.totalResults/ Constants.QUERY_PAGE_SIZE + 2
                         isLastPage = newsViewModel.searchNewsPage == totalPages
                         if(isLastPage){
                             binding.recyclerSearch.setPadding(0,0,0,0)
@@ -102,6 +110,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             }
         })
 
+        // on click listener for retryButton
         retryButton.setOnClickListener{
             if(binding.searchEdit.text.toString().isNotEmpty()){
                 newsViewModel.searchNews(binding.searchEdit.text.toString())
@@ -113,6 +122,9 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
 
     }
 
+    /**
+     * function to show or hide Progress Bar and Error message
+      */
     var isError = false
     var isLoading = false
     var isLastPage = false
@@ -139,7 +151,10 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         isError = true
     }
 
-    val scrollListener = object : RecyclerView.OnScrollListener(){
+    /**
+     * scroll Listener to apply pagination on the search News response
+     */
+    private val scrollListener = object : RecyclerView.OnScrollListener(){
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
             super.onScrollStateChanged(recyclerView, newState)
             if(newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL){
@@ -170,8 +185,9 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         }
     }
 
+    // function to connect the recycler view with our news adapter
     private fun setupSearchRecycler(){
-        newsAdapter = NewsAdapter()
+        newsAdapter = NewsAdapter(listLayout)
         binding.recyclerSearch.apply{
             adapter = newsAdapter
             layoutManager = LinearLayoutManager(activity)

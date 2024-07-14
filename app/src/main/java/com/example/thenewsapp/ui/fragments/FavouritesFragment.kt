@@ -3,7 +3,6 @@ package com.example.thenewsapp.ui.fragments
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.View
-import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -14,6 +13,7 @@ import com.example.thenewsapp.adapters.NewsAdapter
 import com.example.thenewsapp.databinding.FragmentFavouritesBinding
 import com.example.thenewsapp.ui.NewsActivity
 import com.example.thenewsapp.ui.NewsViewModel
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 
 /**
@@ -23,7 +23,8 @@ class FavouritesFragment : Fragment(R.layout.fragment_favourites) {
 
     lateinit var newsViewModel: NewsViewModel
     lateinit var newsAdapter: NewsAdapter
-    lateinit var binding : FragmentFavouritesBinding
+    private lateinit var binding : FragmentFavouritesBinding
+    private var listLayout : Int = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -33,12 +34,17 @@ class FavouritesFragment : Fragment(R.layout.fragment_favourites) {
 
         setUpFavouriteRecycler()
 
+        // on item click listener of the item news (navigating to the article fragment by passing article)
         newsAdapter.setOnItemClickListener {
             val bundle = Bundle().apply{
                 putSerializable("article",it)
             }
             findNavController().navigate(R.id.action_favouritesFragment_to_articleFragment,bundle)
         }
+
+        // Showing the bottom navigation view
+        val bottomNavigationView = (activity as NewsActivity).findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+        bottomNavigationView?.visibility = View.VISIBLE
 
         // code for removing the news item by swapping and can also do undo
         val itemTouchHelperCallBack = object : ItemTouchHelper.SimpleCallback(
@@ -76,8 +82,9 @@ class FavouritesFragment : Fragment(R.layout.fragment_favourites) {
 
     }
 
+    // function to connect recycler view to our news adapter
     private fun setUpFavouriteRecycler(){
-        newsAdapter = NewsAdapter()
+        newsAdapter = NewsAdapter(listLayout)
         binding.recyclerFavourites.apply{
             adapter = newsAdapter
             layoutManager = LinearLayoutManager(activity)

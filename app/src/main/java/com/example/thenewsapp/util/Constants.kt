@@ -2,8 +2,7 @@ package com.example.thenewsapp.util
 
 /**
  *  Class containing constants used in other classes
-  */
-
+ */
 class Constants {
 
     // whatever we write in companion object can be accessed any where in the class
